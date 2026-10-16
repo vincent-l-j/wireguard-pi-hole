@@ -4,14 +4,14 @@ volumes:
 services:
   wg-easy:
     environment:
-      - INSECURE=true
+      INSECURE: "${WG_EASY_INSECURE:-true}"
     # image: ghcr.io/wg-easy/wg-easy:15
     build: .
     container_name: wg-easy
     networks:
       wg:
-        ipv4_address: 10.42.42.42
-        ipv6_address: fdcc:ad94:bacf:61a3::2a
+        ipv4_address: "${WG_CONTAINER_IP}"
+        ipv6_address: "${WG_CONTAINER_IPV6}"
     volumes:
       - etc_wireguard:/etc/wireguard
       - /lib/modules:/lib/modules:ro
@@ -36,5 +36,5 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 10.42.42.0/24
-        - subnet: fdcc:ad94:bacf:61a3::/64
+        - subnet: "${DOCKER_SUBNET}"
+        - subnet: "${DOCKER_IPV6_SUBNET}"
