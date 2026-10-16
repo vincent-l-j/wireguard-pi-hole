@@ -1,0 +1,43 @@
+services:
+  wg-easy:
+    image: ghcr.io/wg-easy/wg-easy:15
+    container_name: wg-easy
+    volumes:
+      - ./data/wg-easy:/etc/wireguard
+      - /lib/modules:/lib/modules:ro
+    ports:
+      - "51820:51820/udp"
+      - "51821:51821/tcp"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      net.ipv4.ip_forward: "1"
+      net.ipv4.conf.all.src_valid_mark: "1"
+    networks:
+      services:
+        ipv4_address: "${WG_CONTAINER_IP}"
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    environment:
+      TZ: "${TZ}"
+      FTLCONF_webserver_api_password: "${PIHOLE_PASSWORD:?Set PIHOLE_PASSWORD in .env}"
+      FTLCONF_dns_listeningMode: "ALL"
+    volumes:
+      - ./data/pihole:/etc/pihole
+    ports:
+      - "${PIHOLE_UI_PORT:-5353}:80/tcp"
+    restart: unless-stopped
+    networks:
+      services:
+        ipv4_address: "${PIHOLE_IP}"
+
+networks:
+  services:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "${DOCKER_SUBNET}"
