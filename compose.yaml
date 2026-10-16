@@ -1,5 +1,6 @@
 volumes:
   etc_wireguard:
+  etc_pihole:
 
 services:
   wg-easy:
@@ -28,6 +29,22 @@ services:
       - net.ipv6.conf.all.disable_ipv6=0
       - net.ipv6.conf.all.forwarding=1
       - net.ipv6.conf.default.forwarding=1
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    environment:
+      TZ: "${TZ}"
+      FTLCONF_webserver_api_password: "${PIHOLE_PASSWORD:?Set PIHOLE_PASSWORD in .env}"
+      FTLCONF_dns_listeningMode: "ALL"
+    networks:
+      wg:
+        ipv4_address: "${PIHOLE_IP}"
+    volumes:
+      - etc_pihole:/etc/pihole
+    ports:
+      - "${PIHOLE_UI_PORT:-5353}:80/tcp"
+    restart: unless-stopped
 
 networks:
   wg:
